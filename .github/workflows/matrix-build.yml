@@ -1,0 +1,41 @@
+yaml
+name: Matrix Build with Artifacts
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # This creates 3 parallel jobs for Node 14, 16, and 18
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [14, 16, 18]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: matrix-9afb2bd
+        run: echo "Building for Node.js ${{ matrix.node-version }}"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Create build output file
+        run: |
+          mkdir build
+          echo Build artifact for node-${{ matrix.node-version }} > build\output-${{ matrix.node-version }}.txt
+          echo Commit: $env:GITHUB_SHA >> build\output-${{ matrix.node-version }}.txt
+          echo Runner: $env:RUNNER_OS >> build\output-${{ matrix.node-version }}.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-9afb2bd-v${{ matrix.node-version }}
+          path: build\output-${{ matrix.node-version }}.txt
